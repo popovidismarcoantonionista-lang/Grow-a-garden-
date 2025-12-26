@@ -1,68 +1,51 @@
--- Grow A Garden SHECKLES REAIS v8 (SALDO USÁVEL!)
+-- Grow A Garden SHECKLES REAIS v9 (ENCONTRA REMOTE REAL)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Player = Players.LocalPlayer
 
-print("=== SHECKLES REAIS (USÁVEIS) v8 ===")
+print("=== DEBUG REMOTES SHECKLES v9 ===")
 
--- HOOK DO leaderstats (SERVER SYNC)
-local mt = getrawmetatable(game)
-local old = mt.__namecall
-setreadonly(mt, false)
-
-mt.__namecall = newcclosure(function(self, ...)
-    local args = {...}
-    local method = getnamecallmethod()
-    
-    -- INTERCEPTA TODAS mudanças de Sheckles
-    if method == "FireServer" and tostring(self):find("Sheckles") then
-        args[2] = 999999999999999  -- FORÇA VALOR INFINITO
-        print("🔧 Sheckles Hooked:", args[2])
-    end
-    
-    -- FORÇA leaderstats sempre infinito
-    if self.Name == "Sheckles" and self.Parent.Name == "leaderstats" then
-        if method == "__index" then
-            return 999999999999999
-        elseif method == "__newindex" then
-            return 999999999999999
+-- ENCONTRA TODOS OS REMOTES POSSÍVEIS
+spawn(function()
+    wait(2)
+    for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+        if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+            print("🔍 REMOTE:", remote:GetFullName())
+            
+            -- TESTA FIRE EM TODOS
+            pcall(function()
+                remote:FireServer("Sheckles", 999999999999999)
+                remote:FireServer("AddSheckles", 999999999999999)
+                remote:FireServer("UpdateCurrency", "Sheckles", 999999999999999)
+            end)
         end
     end
-    
-    return old(self, unpack(args))
 end)
-setreadonly(mt, true)
 
--- LOOP DUPLICADO (MÉTODO LOCAL)
+-- LOOP LOCAL FORÇADO
 spawn(function()
-    while wait(0.05) do
+    while wait(0.1) do
         pcall(function()
             Player.leaderstats.Sheckles.Value = 999999999999999
         end)
     end
 end)
 
--- ANTI-RESET
+-- PROCURA EM TODOS OS LUGARES POSSÍVEIS
 spawn(function()
-    while wait(1) do
-        pcall(function()
-            if Player.leaderstats.Sheckles.Value < 999999999999 then
-                Player.leaderstats.Sheckles.Value = 999999999999999
+    while wait(2) do
+        for _, obj in pairs(game:GetDescendants()) do
+            if obj.Name:lower():find("sheckle") or obj.Name:lower():find("money") or obj.Name:lower():find("coin") then
+                print("💰 ENCONTRADO:", obj:GetFullName(), obj.Value or obj.Text or "N/A")
+                if obj:IsA("IntValue") or obj:IsA("NumberValue") then
+                    obj.Value = 999999999999999
+                end
             end
-        end)
+        end
     end
 end)
 
--- GUI CONFIRMAÇÃO
-local gui = Instance.new("ScreenGui", Player.PlayerGui)
-local label = Instance.new("TextLabel", gui)
-label.Size = UDim2.new(0,350,0,100)
-label.Position = UDim2.new(0,10,0,10)
-label.BackgroundColor3 = Color3.new(0,0.8,0)
-label.TextColor3 = Color3.new(1,1,1)
-label.TextScaled = true
-label.Font = Enum.Font.GothamBold
-label.Text = "✅ SHECKLES REAIS ∞\n💰 999T+ (USÁVEL)\n🔧 Hook + Anti-reset ATIVO"
-
-print("🎉 SHECKLES REAIS INFINITOS!")
-print("🛒 TESTA COMPRAR ALGO AGORA!")
+print("🔍 EXECUTE E MANDA:")
+print("1. TODOS os REMOTES que apareceram")
+print("2. Se algum 'ENCONTRADO' mudou o valor")
+print("3. TESTA COMPRAR enquanto roda!")
